@@ -22,6 +22,7 @@ services:
         PHP_XDEBUG: ${PHP72_XDEBUG}
         PHP_SWOOLE: ${PHP72_SWOOLE}
         PHP_REDIS: ${PHP72_REDIS}
+        PHP_YAF: ${PHP72_YAF}
         REPLACE_SOURCE_LIST: ${REPLACE_SOURCE_LIST}
     volumes:
       - ${SOURCE_DIR}:/var/www/html/:rw
@@ -41,6 +42,7 @@ services:
         PHP_XDEBUG: ${PHP56_XDEBUG}
         PHP_SWOOLE: ${PHP56_SWOOLE}
         PHP_REDIS: ${PHP56_REDIS}
+        PHP_YAF: ${PHP56_YAF}
         REPLACE_SOURCE_LIST: ${REPLACE_SOURCE_LIST}
     volumes:
       - ${SOURCE_DIR}:/var/www/html/:rw
@@ -60,6 +62,7 @@ services:
         PHP_XDEBUG: ${PHP54_XDEBUG}
         PHP_SWOOLE: ${PHP54_SWOOLE}
         PHP_REDIS: ${PHP54_REDIS}
+        PHP_YAF: ${PHP54_YAF}
         REPLACE_SOURCE_LIST: ${REPLACE_SOURCE_LIST}
     volumes:
       - ${SOURCE_DIR}:/var/www/html/:rw
