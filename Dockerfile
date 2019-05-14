@@ -18,6 +18,8 @@ COPY ./extensions /tmp/extensions
 RUN chmod +x /tmp/extensions/install.sh \
     && /tmp/extensions/install.sh \
     && rm -rf /tmp/extensions
+ 
+RUN usermod -u 1000 www-data
 
 # More extensions
 # 1. soap requires libxml2-dev.

@@ -1,4 +1,9 @@
 version: "3"
+
+volumes:
+  unison-sync:
+    external: true
+
 services:
   nginx:
     image: nginx:${NGINX_VERSION}
@@ -6,13 +11,14 @@ services:
       - "${NGINX_HTTP_HOST_PORT}:80"
       - "${NGINX_HTTPS_HOST_PORT}:443"
     volumes:
-      - ${SOURCE_DIR}:/var/www/html/:rw
+      - unison-sync:/var/www/html/:nocopy
       - ${NGINX_CONFD_DIR}:/etc/nginx/conf.d/:rw
       - ${NGINX_CONF_FILE}:/etc/nginx/nginx.conf:ro
       - ${NGINX_LOG_DIR}:/var/log/nginx/:rw
     restart: always
     networks:
-      - default
+      default:
+        ipv4_address: 10.0.0.10
 
   php72:
     build:
@@ -25,7 +31,7 @@ services:
         PHP_YAF: ${PHP72_YAF}
         REPLACE_SOURCE_LIST: ${REPLACE_SOURCE_LIST}
     volumes:
-      - ${SOURCE_DIR}:/var/www/html/:rw
+      - unison-sync:/var/www/html/:nocopy
       - ${PHP72_PHP_CONF_FILE}:/usr/local/etc/php/php.ini:ro
       - ${PHP72_FPM_CONF_FILE}:/usr/local/etc/php-fpm.d/www.conf:rw
     restart: always
@@ -45,7 +51,7 @@ services:
         PHP_YAF: ${PHP56_YAF}
         REPLACE_SOURCE_LIST: ${REPLACE_SOURCE_LIST}
     volumes:
-      - ${SOURCE_DIR}:/var/www/html/:rw
+      - unison-sync:/var/www/html/:nocopy
       - ${PHP56_PHP_CONF_FILE}:/usr/local/etc/php/php.ini:ro
       - ${PHP56_FPM_CONF_FILE}:/usr/local/etc/php-fpm.d/www.conf:rw
     restart: always
@@ -65,7 +71,7 @@ services:
         PHP_YAF: ${PHP54_YAF}
         REPLACE_SOURCE_LIST: ${REPLACE_SOURCE_LIST}
     volumes:
-      - ${SOURCE_DIR}:/var/www/html/:rw
+      - unison-sync:/var/www/html/:nocopy
       - ${PHP54_PHP_CONF_FILE}:/usr/local/etc/php/php.ini:ro
       - ${PHP54_FPM_CONF_FILE}:/usr/local/etc/php-fpm.d/www.conf:rw
     restart: always
@@ -121,3 +127,8 @@ services:
 
 networks:
   default:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+      - subnet: 10.0.0.0/24
