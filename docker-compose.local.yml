@@ -1,4 +1,5 @@
 version: "3"
+
 services:
   nginx:
     image: nginx:${NGINX_VERSION}
@@ -6,13 +7,15 @@ services:
       - "${NGINX_HTTP_HOST_PORT}:80"
       - "${NGINX_HTTPS_HOST_PORT}:443"
     volumes:
-      - ${SOURCE_DIR}:/var/www/html/:rw
+      - ${SOURCE_DIR}:/var/www/html/:cached
       - ${NGINX_CONFD_DIR}:/etc/nginx/conf.d/:rw
       - ${NGINX_CONF_FILE}:/etc/nginx/nginx.conf:ro
       - ${NGINX_LOG_DIR}:/var/log/nginx/:rw
     restart: always
     networks:
-      - default
+      local:
+        ipv4_address: 10.0.0.10
+
 
   php72:
     build:
@@ -22,16 +25,20 @@ services:
         PHP_XDEBUG: ${PHP72_XDEBUG}
         PHP_SWOOLE: ${PHP72_SWOOLE}
         PHP_REDIS: ${PHP72_REDIS}
+        PHP_YAF: ${PHP72_YAF}
         REPLACE_SOURCE_LIST: ${REPLACE_SOURCE_LIST}
     volumes:
-      - ${SOURCE_DIR}:/var/www/html/:rw
+      - ${SOURCE_DIR}:/var/www/html/:cached
       - ${PHP72_PHP_CONF_FILE}:/usr/local/etc/php/php.ini:ro
       - ${PHP72_FPM_CONF_FILE}:/usr/local/etc/php-fpm.d/www.conf:rw
     restart: always
     cap_add:
       - SYS_PTRACE
+    extra_hosts:
+      - "example.local:10.0.0.10"
     networks:
-      - default
+      - local
+
 
   php56:
     build:
@@ -41,48 +48,36 @@ services:
         PHP_XDEBUG: ${PHP56_XDEBUG}
         PHP_SWOOLE: ${PHP56_SWOOLE}
         PHP_REDIS: ${PHP56_REDIS}
+        PHP_YAF: ${PHP56_YAF}
         REPLACE_SOURCE_LIST: ${REPLACE_SOURCE_LIST}
     volumes:
-      - ${SOURCE_DIR}:/var/www/html/:rw
+      - ${SOURCE_DIR}:/var/www/html/:cached
       - ${PHP56_PHP_CONF_FILE}:/usr/local/etc/php/php.ini:ro
       - ${PHP56_FPM_CONF_FILE}:/usr/local/etc/php-fpm.d/www.conf:rw
     restart: always
     cap_add:
       - SYS_PTRACE
+    extra_hosts:
+      - "example.local:10.0.0.10"
     networks:
-      - default
+      - local
 
-  php54:
-    build:
-      context: .
-      args:
-        PHP_VERSION: ${PHP54_VERSION}
-        PHP_XDEBUG: ${PHP54_XDEBUG}
-        PHP_SWOOLE: ${PHP54_SWOOLE}
-        PHP_REDIS: ${PHP54_REDIS}
-        REPLACE_SOURCE_LIST: ${REPLACE_SOURCE_LIST}
-    volumes:
-      - ${SOURCE_DIR}:/var/www/html/:rw
-      - ${PHP54_PHP_CONF_FILE}:/usr/local/etc/php/php.ini:ro
-      - ${PHP54_FPM_CONF_FILE}:/usr/local/etc/php-fpm.d/www.conf:rw
-    restart: always
-    cap_add:
-      - SYS_PTRACE
-    networks:
-      - default
 
   mysql:
     image: mysql:${MYSQL_VERSION}
+    user: "1000:50"
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
     ports:
       - "${MYSQL_HOST_PORT}:3306"
     volumes:
       - ${MYSQL_CONF_FILE}:/etc/mysql/conf.d/mysql.cnf:ro
       - ${MYSQL_DATA_DIR}:/var/lib/mysql/:rw
-    restart: always
+    command: --innodb-use-native-aio=0
     networks:
-      - default
-    environment:
-      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
+      - local
+
 
   redis:
     image: redis:${REDIS_VERSION}
@@ -93,15 +88,17 @@ services:
     restart: always
     entrypoint: ["redis-server", "/etc/redis.conf"]
     networks:
-      - default
-    
+      - local
+
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin:latest
+    depends_on:
+      - mysql
     ports:
       - "${PHPMYADMIN_HOST_PORT}:80"
     networks:
-      - default
+      - local
     environment:
       - PMA_HOST=mysql
       - PMA_PORT=3306
@@ -111,10 +108,16 @@ services:
     ports:
       - "${REDISMYADMIN_HOST_PORT}:80"
     networks:
-      - default
+      - local
     environment:
       - REDIS_1_HOST=redis
       - REDIS_1_PORT=6379
 
+
 networks:
-  default:
+  local:
+    driver: bridge
+    ipam:
+      driver: local
+      config:
+      - subnet: 10.0.0.0/24

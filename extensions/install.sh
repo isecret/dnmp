@@ -63,3 +63,11 @@ if [ "${PHP_SWOOLE}" != "false" ]; then
     && ( cd swoole && phpize && ./configure && make $mc && make install ) \
     && docker-php-ext-enable swoole
 fi
+
+# yaf require PHP version 5.6 or later.
+if [ "${PHP_YAF}" != "false" ]; then
+    mkdir yaf \
+    && tar -xf yaf-${PHP_YAF}.tgz -C yaf --strip-components=1 \
+    && ( cd yaf && phpize && ./configure && make $mc && make install ) \
+    && docker-php-ext-enable yaf
+fi

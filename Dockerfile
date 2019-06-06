@@ -4,6 +4,7 @@ FROM php:${PHP_VERSION}-fpm
 ARG PHP_XDEBUG
 ARG PHP_SWOOLE
 ARG PHP_REDIS
+ARG PHP_YAF
 ARG REPLACE_SOURCE_LIST
 
 COPY ./sources.list /etc/apt/sources.list.tmp
@@ -17,6 +18,8 @@ COPY ./extensions /tmp/extensions
 RUN chmod +x /tmp/extensions/install.sh \
     && /tmp/extensions/install.sh \
     && rm -rf /tmp/extensions
+ 
+RUN usermod -u 1000 www-data
 
 # More extensions
 # 1. soap requires libxml2-dev.
